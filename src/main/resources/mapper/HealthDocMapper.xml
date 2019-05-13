@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hospital.dao.HealthDocDao">
+    <resultMap id="HealthDocMap" type="com.hospital.entity.HealthDoc">
+        <id column="id" jdbcType="INTEGER" property="id" />
+        <result column="hospitalHistory" jdbcType="VARCHAR" property="hospital_history" />
+        <result column="operationHistory" jdbcType="VARCHAR" property="operation_history" />
+        <result column="familyHistory" jdbcType="VARCHAR" property="family_history" />
+        <result column="createTime" jdbcType="VARCHAR" property="create_time" />
+        <result column="telephone" jdbcType="VARCHAR" property="telephone" />
+    </resultMap>
+
+    <resultMap id="HealthDocImageMap" type="com.hospital.entity.HealthDocImage">
+        <id column="id" jdbcType="INTEGER" property="id" />
+        <result column="imageUrl" jdbcType="VARCHAR" property="image_url" />
+        <result column="content" jdbcType="VARCHAR" property="content" />
+        <result column="healthId" jdbcType="VARCHAR" property="health_id" />
+        <result column="createDate" jdbcType="VARCHAR" property="create_date" />
+    </resultMap>
+
+    <insert id="addHealthDoc" parameterType="HealthDoc">
+      insert into t_healthdoc_basic(hospital_history,operation_history,family_history,create_time,telephone)
+       values(#{hospitalHistory},#{operationHistory},#{familyHistory},now(),#{telephone})
+    </insert>
+
+    <insert id="addHealthDocImage" parameterType="HealthDocImage">
+      insert into t_healthdoc_image(image_url,content,create_date,healthdoc_id)
+       values(#{imageUrl},#{content},#{createDate},healthdocId)
+    </insert>
+
+    <select id="getHealthDocByTelephone" resultMap="HealthDocMap" parameterType="java.lang.String">
+      select h.* from t_healthdoc_basic h where h.telephone=#{telephone}
+    </select>
+
+    <select id="getHealthDocImageByHealthId" resultMap="HealthDocImageMap" parameterType="java.lang.Integer">
+      select h.* from t_healthdoc_image h where h.health_id=${healthId}
+    </select>
+
+    <update id="updateHealthDoc" parameterType="HealthDoc">
+        update t_healthdoc_basic set hospital_history=#{hospitalHistory},operation_history=#{operationHistory},
+        family_history=#{familyHistory} where telephone=#{telephone}
+    </update>
+
+    <delete id="deleteHeadImage" parameterType="Integer">
+        delete from t_healthdoc_image where id=#{id}
+    </delete>
+</mapper>

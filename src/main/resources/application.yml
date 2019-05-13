@@ -1,0 +1,36 @@
+server:
+  port: 8089
+
+datasource:
+  url: 111.230.253.60:3306/hospital
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${datasource.url}?useSSL=false&useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&autoReconnect=true&failOverReadOnly=false&maxReconnects=10&serverTimezone=UTC
+    username: root
+    password: cczu20190501
+    hikari:
+      maximum-pool-size: 10
+      max-lifetime: 1770000
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    jedis:
+      pool:
+        max-active: 8
+        max-idle: 8
+  mail:
+    host: smtp.qq.com
+    username: 1739364967@qq.com
+    password: scmjxwyhyvcucici
+    defaultEncoding: UTF-8
+mybatis:
+  type-aliases-package: com.hospital.entity
+  configuration:
+    map-underscore-to-camel-case: true
+  mapper-locations:
+  - classpath:mapper/*.xml
+mail:
+  fromMail:
+    addr: 1739364967@qq.com

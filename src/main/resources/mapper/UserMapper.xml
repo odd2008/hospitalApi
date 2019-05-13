@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hospital.dao.UserDao">
+    <resultMap id="UserMap" type="com.hospital.entity.User">
+
+        <id column="id" jdbcType="INTEGER" property="id" />
+        <result column="telephone" jdbcType="VARCHAR" property="telephone" />
+        <result column="passwordHash" jdbcType="VARCHAR" property="password_hash" />
+        <result column="passwordSalt" jdbcType="VARCHAR" property="password_salt" />
+        <result column="mail" jdbcType="VARCHAR" property="mail" />
+        <result column="headImageUrl" jdbcType="VARCHAR" property="head_image_url" />
+        <result column="name" jdbcType="VARCHAR" property="name" />
+        <result column="gender" jdbcType="VARCHAR" property="gender" />
+        <result column="birthday" jdbcType="VARCHAR" property="birthday" />
+        <result column="height" jdbcType="DOUBLE" property="height" />
+        <result column="weight" jdbcType="DOUBLE" property="weight" />
+        <result column="job" jdbcType="VARCHAR" property="job" />
+        <result column="emergencyName" jdbcType="VARCHAR" property="emergency_name" />
+        <result column="emergencyLink" jdbcType="VARCHAR" property="emergency_link" />
+        <result column="address" jdbcType="VARCHAR" property="address" />
+        <result column="hometown" jdbcType="VARCHAR" property="hometown" />
+        <result column="createTime" jdbcType="VARCHAR" property="create_time" />
+    </resultMap>
+
+    <insert id="addUser" parameterType="User">
+      insert into t_user(telephone,password_hash,password_salt,mail,create_time) values(#{telephone},#{passwordHash},#{passwordSalt},#{mail},now())
+    </insert>
+
+    <select id="getUserByTelephone" resultMap="UserMap" parameterType="java.lang.String">
+      select u.* from t_user u where u.telephone=#{telephone}
+    </select>
+
+    <update id="updateBasicInfo" parameterType="User">
+        update t_user set name=#{name},gender=#{gender},birthday=#{birthday},height=#{height},weight=#{weight},job=#{job},
+        emergency_name=#{emergencyName},emergency_link=#{emergencyLink},address=#{address},hometown=#{hometown} where telephone=#{telephone}
+    </update>
+
+    <update id="addHeadImage" parameterType="Map">
+        update t_user set head_image_url=#{headImageUrl} where telephone=#{telephone}
+    </update>
+</mapper>
