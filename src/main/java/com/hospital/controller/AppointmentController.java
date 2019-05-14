@@ -75,12 +75,24 @@ public class AppointmentController {
         Map<String, Integer> param = new HashMap<>();
         param.put("departId", departId);
         List<Doctor> doctors = doctorDao.getDoctorByDepartId(param);
+        List<DoctorDetailDTO> doctorDetailDTOs = new ArrayList<>();
+        doctors.stream().forEach(doctor -> {
+            Map<String, Integer> countParam = new HashMap<>();
+            countParam.put("doctorId", doctor.getId());
+            Integer count = doctorDao.getAppointCount(countParam);
+            if (count == null) {
+                count = 0;
+            }
+            DoctorDetailDTO doctorDetailDTO = new DoctorDetailDTO(doctor.getId(), doctor.getName(), doctor.getPosition(), doctor.getRate(), doctor.getAppointNum(), doctor.getSkills(), doctor.getHeadImageUrl(), "");
+            doctorDetailDTO.setCount(count);
+            doctorDetailDTOs.add(doctorDetailDTO);
+        });
         logger.info(departId.toString());
         Map<String, Object> resultMap = new HashMap<>();
 
         resultMap.put("status", "success");
         resultMap.put("errMsg", "");
-        resultMap.put("data", doctors);
+        resultMap.put("data", doctorDetailDTOs);
         return resultMap;
     }
 
@@ -107,6 +119,22 @@ public class AppointmentController {
         resultMap.put("status", "success");
         resultMap.put("errMsg", "");
         resultMap.put("data", doctorDetailDTO);
+        return resultMap;
+    }
+
+    @PostMapping(value = "/getAppointCount")
+    public Map<String, Object> getAppointCount(Integer doctorId) throws Exception{
+        Map<String, Integer> countParam = new HashMap<>();
+        countParam.put("id", doctorId);
+        Integer count = doctorDao.getAppointCount(countParam);
+        if (count == null) {
+            count = 0;
+        }
+
+        Map<String, Object> resultMap = new HashMap<>();
+        resultMap.put("status", "success");
+        resultMap.put("errMsg", "");
+        resultMap.put("data", count);
         return resultMap;
     }
 

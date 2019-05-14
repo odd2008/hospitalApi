@@ -20,6 +20,7 @@
         <result column="doctorId" jdbcType="INTEGER" property="doctor_id" />
         <result column="totalNum" jdbcType="INTEGER" property="total_num" />
         <result column="appointNum" jdbcType="INTEGER" property="appoint_num" />
+        <result column="status" jdbcType="BIT" property="status" />
     </resultMap>
 
     <select id="getDoctorByDepartId" resultMap="DoctorMap" parameterType="Map">
@@ -35,7 +36,11 @@
     </select>
 
     <select id="getAppointTime" resultMap="AppointTimeMap" parameterType="Map">
-      select * from t_appoint_time where doctor_id=${doctorId}
+      select * from t_appoint_time where doctor_id=${doctorId} and status=false
+    </select>
+
+    <select id="getAppointCount" resultType="Integer" parameterType="Map">
+      select sum(a.total_num-a.appoint_num) from t_appoint_time a where a.doctor_id=${doctorId} and a.status=false
     </select>
 
 </mapper>

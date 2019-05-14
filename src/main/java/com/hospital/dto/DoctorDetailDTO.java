@@ -9,6 +9,7 @@ public class DoctorDetailDTO {
     private String skills;
     private String headImageUrl;
     private String department;
+    private Integer count;
 
     public DoctorDetailDTO(Integer id, String name, String position, Double rate, Integer appointNum, String skills, String headImageUrl, String department) {
         this.id = id;
@@ -83,5 +84,13 @@ public class DoctorDetailDTO {
 
     public void setDepartment(String department) {
         this.department = department;
+    }
+
+    public Integer getCount() {
+        return count;
+    }
+
+    public void setCount(Integer count) {
+        this.count = count;
     }
 }

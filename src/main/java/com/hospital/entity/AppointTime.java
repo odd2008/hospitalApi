@@ -8,6 +8,7 @@ public class AppointTime {
     private Integer doctorId;
     private Integer totalNum;
     private Integer appointNum;
+    private Boolean status;
 
     public Integer getId() {
         return id;
@@ -63,5 +64,13 @@ public class AppointTime {
 
     public void setAppointNum(Integer appointNum) {
         this.appointNum = appointNum;
+    }
+
+    public Boolean getStatus() {
+        return status;
+    }
+
+    public void setStatus(Boolean status) {
+        this.status = status;
     }
 }
