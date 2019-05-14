@@ -3,6 +3,7 @@ package com.hospital.entity;
 public class HealthDocImage {
     private Integer id;
     private String imageUrl;
+    private String content;
     private String createDate;
     private Integer healthId;
 
@@ -37,4 +38,13 @@ public class HealthDocImage {
     public void setHealthId(Integer healthId) {
         this.healthId = healthId;
     }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
 }

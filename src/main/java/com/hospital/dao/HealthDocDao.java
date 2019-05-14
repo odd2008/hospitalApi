@@ -4,6 +4,7 @@ import com.hospital.entity.HealthDoc;
 import com.hospital.entity.HealthDocImage;
 
 import java.util.List;
+import java.util.Map;
 
 public interface HealthDocDao {
 
@@ -13,7 +14,7 @@ public interface HealthDocDao {
 
     HealthDoc getHealthDocByTelephone(String telephone);
 
-    List<HealthDocImage> getHealthDocImageByHealthId(Integer healthId);
+    List<HealthDocImage> getHealthDocImageByHealthId(Map<String,Integer> param);
 
     void updateHealthDoc(HealthDoc healthDoc);
 
