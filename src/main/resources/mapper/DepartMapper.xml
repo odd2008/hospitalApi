@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hospital.dao.DepartDao">
+    <resultMap id="DepartTypeMap" type="com.hospital.entity.DepartType">
+        <id column="id" jdbcType="INTEGER" property="id" />
+        <result column="name" jdbcType="VARCHAR" property="name" />
+    </resultMap>
+
+    <resultMap id="DepartMap" type="com.hospital.entity.Depart">
+        <id column="id" jdbcType="INTEGER" property="id" />
+        <result column="name" jdbcType="VARCHAR" property="name" />
+        <result column="typeId" jdbcType="INTEGER" property="type_id" />
+    </resultMap>
+
+    <select id="getDepartType" resultMap="DepartTypeMap">
+      select * from t_depart_type
+    </select>
+
+    <select id="getDepart" resultMap="DepartMap" parameterType="Map">
+      select d.* from t_depart d where d.type_id=${typeId}
+    </select>
+
+    <select id="getDepartById" resultMap="DepartMap" parameterType="Map">
+      select d.* from t_depart d where d.id=${id}
+    </select>
+
+</mapper>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hospital.dao.DoctorDao">
+    <resultMap id="DoctorMap" type="com.hospital.entity.Doctor">
+        <id column="id" jdbcType="INTEGER" property="id" />
+        <result column="name" jdbcType="VARCHAR" property="name" />
+        <result column="position" jdbcType="VARCHAR" property="position" />
+        <result column="rate" jdbcType="DOUBLE" property="rate" />
+        <result column="appointNum" jdbcType="INTEGER" property="appoint_num" />
+        <result column="skills" jdbcType="VARCHAR" property="skills" />
+        <result column="headImageUrl" jdbcType="VARCHAR" property="head_image_url" />
+        <result column="departId" jdbcType="INTEGER" property="depart_id" />
+    </resultMap>
+
+    <resultMap id="AppointTimeMap" type="com.hospital.entity.AppointTime">
+        <id column="id" jdbcType="INTEGER" property="id" />
+        <result column="appointDate" jdbcType="VARCHAR" property="appoint_date" />
+        <result column="timeSpan" jdbcType="VARCHAR" property="time_span" />
+        <result column="price" jdbcType="INTEGER" property="price" />
+        <result column="doctorId" jdbcType="INTEGER" property="doctor_id" />
+        <result column="totalNum" jdbcType="INTEGER" property="total_num" />
+        <result column="appointNum" jdbcType="INTEGER" property="appoint_num" />
+    </resultMap>
+
+    <select id="getDoctorByDepartId" resultMap="DoctorMap" parameterType="Map">
+      select d.* from t_doctor d where d.depart_id=${departId}
+    </select>
+
+    <select id="getDoctorById" resultMap="DoctorMap" parameterType="Map">
+      select d.* from t_doctor d where d.id=${id}
+    </select>
+
+    <select id="getRecommendDoctor" resultMap="DoctorMap">
+      select * from t_doctor order by (rate+appoint_num/500) DESC LIMIT 20
+    </select>
+
+    <select id="getAppointTime" resultMap="AppointTimeMap" parameterType="Map">
+      select * from t_appoint_time where doctor_id=${doctorId}
+    </select>
+
+</mapper>

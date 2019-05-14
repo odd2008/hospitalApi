@@ -86,6 +86,7 @@ public class LoginAspectHandler {
             resultMap.put("errMsg", "token验证失败！");
             resultMap.put("data", "");
             logger.info(JSONObject.toJSONString(resultMap));
+            logger.info(e.getMessage());
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, JSONObject.toJSONString(resultMap));
             logger.info(authorizationToken);
             return null;
