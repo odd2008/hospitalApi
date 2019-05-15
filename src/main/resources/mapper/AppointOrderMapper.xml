@@ -19,15 +19,19 @@
        values(#{doctorId},#{appointTimeId},#{telephone},#{treatType},#{sickInfo},#{createTime},0)
     </insert>
 
-    <select id="getOrderByTelephone" resultMap="AppointOrderMap" parameterType="String">
-      select o.* from t_appoint_order o where o.telephone=${telephone}
+    <select id="getOrderByTelephone" resultMap="AppointOrderMap" parameterType="java.lang.String">
+      select o.* from t_appoint_order o where o.telephone=#{telephone} order by status
     </select>
 
     <update id="updateOrder" parameterType="AppointOrder">
         update t_appoint_order set treat_time=#{treatTime},treat_result=#{treatResult} where telephone=#{telephone}
     </update>
 
-    <select id="checkOrderExist" resultMap="AppointOrderMap" parameterType="String">
+    <update id="cancleAppoint" parameterType="Map">
+        update t_appoint_order set status=2 where id=${id}
+    </update>
+
+    <select id="checkOrderExist" resultMap="AppointOrderMap" parameterType="java.lang.String">
       select * from t_appoint_order where telephone=#{telephone} and status=0
     </select>
 

@@ -5,7 +5,9 @@ import com.hospital.dao.AppointOrderDao;
 import com.hospital.dao.DepartDao;
 import com.hospital.dao.DoctorDao;
 import com.hospital.dao.UserDao;
+import com.hospital.dto.AppointHistoryDTO;
 import com.hospital.dto.DoctorDetailDTO;
+import com.hospital.dto.UserDTO;
 import com.hospital.entity.*;
 import com.hospital.tools.AesEncryptHelper;
 import org.slf4j.Logger;
@@ -22,12 +24,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 @RestController
 @RequestMapping("/appointment")
 public class AppointmentController {
 
     private final static Logger logger = LoggerFactory.getLogger(AppointmentController.class);
+
+    private ReentrantReadWriteLock rwlock = new ReentrantReadWriteLock();
 
     @Autowired
     private UserDao userDao;
@@ -209,7 +214,7 @@ public class AppointmentController {
             resultMap.put("data", "");
             return resultMap;
         }
-
+        rwlock.writeLock().lock(); // 上写锁 单一线程访问
         Map<String, Integer> param = new HashMap<>();
         param.put("id", appointOrder.getAppointTimeId());
         AppointTime appointTime = doctorDao.getAppointTimeById(param);
@@ -221,12 +226,12 @@ public class AppointmentController {
         }
 
         // 改变当前时间预约人数
-
         doctorDao.appointOrder(param);
 
         // 存订单数据库
         appointOrder.setTelephone(telephone);
         appointOrderDao.addOrder(appointOrder);
+        rwlock.writeLock().unlock();  // 释放写锁
 
         resultMap.put("status", "success");
         resultMap.put("errMsg", "");
@@ -234,4 +239,56 @@ public class AppointmentController {
         return resultMap;
     }
 
+    @PostMapping(value = "/getAppointHistory")
+    public Map<String, Object> getAppointHistory(@RequestHeader HttpHeaders headers) throws Exception{
+        Map<String, Object> resultMap = new HashMap<>();
+        //获取用户电话号码
+        String authorizationToken = headers.getFirst(Constants.AUTHORIZATION);
+        Map<String, String> userMap = AesEncryptHelper.getUserFromToken(authorizationToken);
+        logger.info(userMap.get("telephone"));
+        String telephone = userMap.get("telephone");
+
+        List<AppointOrder> appointOrder = appointOrderDao.getOrderByTelephone(telephone);
+        List<AppointHistoryDTO> appointHistoryDTOs = new ArrayList<>();
+        appointOrder.stream().forEach(order -> {
+            // 获取医生信息
+            Map<String, Integer> doctorParam = new HashMap<>();
+            doctorParam.put("id", order.getDoctorId());
+            Doctor doctor = doctorDao.getDoctorById(doctorParam);
+            Map<String, Integer> departParam = new HashMap<>();
+            departParam.put("id", doctor.getDepartId());
+            Depart depart = departDao.getDepartById(departParam);
+            DoctorDetailDTO doctorDetailDTO = new DoctorDetailDTO(doctor.getId(), doctor.getName(), doctor.getPosition(), doctor.getRate(), doctor.getAppointNum(), doctor.getSkills(), doctor.getHeadImageUrl(), depart.getName());
+
+            // 获取挂号的时间段
+            Map<String, Integer> appointParam = new HashMap<>();
+            appointParam.put("id", order.getAppointTimeId());
+            AppointTime appointTime = doctorDao.getAppointTimeById(appointParam);
+            AppointHistoryDTO dto = new AppointHistoryDTO(order.getId(), doctorDetailDTO, appointTime, order.getTreatType(), order.getSickInfo(),order.getCreateTime(), order.getTreatTime(), order.getTreatResult(), order.getStatus());
+            appointHistoryDTOs.add(dto);
+        });
+        resultMap.put("status", "success");
+        resultMap.put("errMsg", "");
+        resultMap.put("data", appointHistoryDTOs);
+        return resultMap;
+    }
+
+    @PostMapping(value = "/cancleAppoint")
+    @Transactional
+    public Map<String, Object> cancleAppoint(Integer orderId, Integer timeId) {
+        rwlock.writeLock().lock(); // 加写锁
+        Map<String, Integer> orderParam = new HashMap<>();
+        orderParam.put("id", orderId);
+        appointOrderDao.cancleAppoint(orderParam);
+
+        Map<String, Integer> timeParam = new HashMap<>();
+        timeParam.put("id", timeId);
+        doctorDao.cancleAppoint(timeParam);
+        rwlock.writeLock().unlock();  // 释放写锁
+        Map<String, Object> resultMap = new HashMap<>();
+        resultMap.put("status", "success");
+        resultMap.put("errMsg", "");
+        resultMap.put("data", "");
+        return resultMap;
+    }
 }

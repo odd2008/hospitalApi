@@ -22,4 +22,5 @@ public interface DoctorDao {
 
     AppointTime getAppointTimeById(Map<String, Integer> param);
 
+    void cancleAppoint(Map<String, Integer> param);
 }

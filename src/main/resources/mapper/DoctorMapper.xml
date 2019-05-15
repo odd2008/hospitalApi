@@ -44,10 +44,14 @@
     </select>
 
     <select id="getAppointTimeById" resultMap="AppointTimeMap" parameterType="Map">
-      select * from t_appoint_time where id=${id} and status=false
+      select * from t_appoint_time where id=${id}
     </select>
 
     <update id="appointOrder" parameterType="Map">
       update t_appoint_time t set t.appoint_num=t.appoint_num+1 where id=#{id}
+    </update>
+
+    <update id="cancleAppoint" parameterType="Map">
+        update t_appoint_time set appoint_num=appoint_num-1 where id=${id}
     </update>
 </mapper>
