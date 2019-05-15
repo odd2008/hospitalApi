@@ -152,7 +152,7 @@ public class AppointmentController {
     public Map<String, Object> getRecommendDoctor() throws Exception{
         logger.info("getRecommendDoctor");
         List<Doctor> doctors = doctorDao.getRecommendDoctor(); // 预选20个优秀的同志
-        List<Doctor> recommendDoctors = getRandomDoctor(2, doctors);
+        List<Doctor> recommendDoctors = getRandomDoctor(4, doctors);
 
         List<DoctorDetailDTO> recommendDoctorsDetail = new ArrayList<>();
         for (Doctor doctor: recommendDoctors) {
