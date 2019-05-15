@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hospital.dao.ContentDao">
+    <resultMap id="ContentMap" type="com.hospital.entity.Content">
+
+        <id column="id" jdbcType="INTEGER" property="id" />
+        <result column="content" jdbcType="VARCHAR" property="content" />
+        <result column="publishDate" jdbcType="VARCHAR" property="publish_date" />
+        <result column="rate" jdbcType="INTEGER" property="rate" />
+        <result column="telephone" jdbcType="VARCHAR" property="telephone" />
+        <result column="targetType" jdbcType="INTEGER" property="target_type" />
+        <result column="targetId" jdbcType="INTEGER" property="target_id" />
+    </resultMap>
+
+    <insert id="addContent" parameterType="Content">
+      insert into t_comment(content, publish_date, rate, telephone, target_type, target_id) values(#{content},#{publishDate},#{rate},#{telephone},#{targetType},#{targetId})
+    </insert>
+
+    <insert id="updateContent" parameterType="Content">
+      update t_comment set content=#{content},rate=${rate} where target_type=${targetType} and target_id=${targetId} and telephone=#{telephone}
+    </insert>
+
+    <select id="getComment" resultMap="ContentMap" parameterType="Map">
+      select * from t_comment where target_type=${targetType} and target_id=${targetId}
+    </select>
+
+    <select id="getCommentById" resultMap="ContentMap" parameterType="Map">
+      select * from t_comment where target_type=${targetType} and target_id=${targetId} and telephone=#{telephone}
+    </select>
+
+</mapper>

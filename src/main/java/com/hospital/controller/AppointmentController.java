@@ -1,10 +1,7 @@
 package com.hospital.controller;
 
 import com.hospital.constant.Constants;
-import com.hospital.dao.AppointOrderDao;
-import com.hospital.dao.DepartDao;
-import com.hospital.dao.DoctorDao;
-import com.hospital.dao.UserDao;
+import com.hospital.dao.*;
 import com.hospital.dto.AppointHistoryDTO;
 import com.hospital.dto.DoctorDetailDTO;
 import com.hospital.dto.UserDTO;
@@ -45,6 +42,9 @@ public class AppointmentController {
 
     @Autowired
     private AppointOrderDao appointOrderDao;
+
+    @Autowired
+    private ContentDao contentDao;
 
     @PostMapping(value = "/getDepartInfo")
     public Map<String, Object> getDepartInfo(@RequestHeader HttpHeaders headers) throws Exception{
@@ -289,6 +289,101 @@ public class AppointmentController {
         resultMap.put("status", "success");
         resultMap.put("errMsg", "");
         resultMap.put("data", "");
+        return resultMap;
+    }
+
+    @PostMapping(value = "/addContent")
+    public Map<String, Object> addContent(Content content, @RequestHeader HttpHeaders headers) throws Exception{
+        //获取用户电话号码
+        String authorizationToken = headers.getFirst(Constants.AUTHORIZATION);
+        Map<String, String> userMap = AesEncryptHelper.getUserFromToken(authorizationToken);
+        String telephone = userMap.get("telephone");
+        logger.info(telephone);
+
+        content.setTelephone(telephone);
+        if(content.getTargetType() == 2) {
+            // 获取科室的id
+            Map<String, Integer> doctorParam = new HashMap<>();
+            doctorParam.put("id", content.getTargetId());
+            Doctor doctor = doctorDao.getDoctorById(doctorParam);
+            content.setTargetId(doctor.getDepartId());
+        }
+        Map<String, Object> param = new HashMap<>();
+        param.put("targetId", content.getTargetId());
+        param.put("targetType", content.getTargetType());
+        param.put("telephone", telephone);
+        if(contentDao.getCommentById(param) != null) {
+            // 修改
+            logger.info("修改");
+            contentDao.updateContent(content);
+        } else {
+            logger.info("添加");
+            contentDao.addContent(content);
+        }
+        Map<String, Object> resultMap = new HashMap<>();
+        resultMap.put("status", "success");
+        resultMap.put("errMsg", "");
+        resultMap.put("data", "");
+        return resultMap;
+    }
+
+    @PostMapping(value = "/getComment")
+    public Map<String, Object> getComment(Integer targetType, Integer targetId) {
+
+        Map<String, Integer> param = new HashMap<>();
+        param.put("targetType", targetType);
+        param.put("targetId", targetId);
+        List<Content> contents = contentDao.getComment(param);
+        List<Map<String, Object>> resultList = new ArrayList<>();
+        contents.stream().forEach(content -> {
+            Map<String, Object> result = new HashMap<>();
+            User user = userDao.getUserByTelephone(content.getTelephone());
+            UserDTO userDTO = new UserDTO(user, false);
+            result.put("user", userDTO);
+            result.put("comment", content);
+            resultList.add(result);
+        });
+
+        Map<String, Object> resultMap = new HashMap<>();
+        resultMap.put("status", "success");
+        resultMap.put("errMsg", "");
+        resultMap.put("data", resultList);
+        return resultMap;
+    }
+
+    @PostMapping(value = "/getCurrentContent")
+    public Map<String, Object> getCurrentContent(Integer doctorId, @RequestHeader HttpHeaders headers) throws Exception {
+
+        //获取用户电话号码
+        String authorizationToken = headers.getFirst(Constants.AUTHORIZATION);
+        Map<String, String> userMap = AesEncryptHelper.getUserFromToken(authorizationToken);
+        String telephone = userMap.get("telephone");
+
+        // 医生评论
+        Map<String, Object> param = new HashMap<>();
+        param.put("targetId", doctorId);
+        param.put("targetType", 1);
+        param.put("telephone", telephone);
+        Content contentDoctor = contentDao.getCommentById(param);
+
+        // 科室评论
+        // 获取科室的id
+        Map<String, Integer> doctorParam = new HashMap<>();
+        doctorParam.put("id", doctorId);
+        Doctor doctor = doctorDao.getDoctorById(doctorParam);
+
+        param.put("targetId", doctor.getDepartId());
+        param.put("targetType", 2);
+        Content contentDepart = contentDao.getCommentById(param);
+
+        Map<String, Object> resultData = new HashMap<>();
+        resultData.put("doctor", contentDoctor);
+        resultData.put("depart", contentDepart);
+
+        Map<String, Object> resultMap = new HashMap<>();
+        resultMap.put("status", "success");
+        resultMap.put("errMsg", "");
+        resultMap.put("data", resultData);
         return resultMap;
     }
 }
