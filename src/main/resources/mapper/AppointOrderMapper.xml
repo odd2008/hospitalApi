@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hospital.dao.AppointOrderDao">
+    <resultMap id="AppointOrderMap" type="com.hospital.entity.AppointOrder">
+        <id column="id" jdbcType="INTEGER" property="id" />
+        <result column="doctorId" jdbcType="INTEGER" property="doctor_id" />
+        <result column="appointTimeId" jdbcType="INTEGER" property="appoint_time_id" />
+        <result column="telephone" jdbcType="VARCHAR" property="telephone" />
+        <result column="treatType" jdbcType="VARCHAR" property="treat_type" />
+        <result column="sickInfo" jdbcType="VARCHAR" property="sick_info" />
+        <result column="createTime" jdbcType="VARCHAR" property="create_time" />
+        <result column="treatTime" jdbcType="VARCHAR" property="treat_time" />
+        <result column="treatResult" jdbcType="VARCHAR" property="treat_result" />
+        <result column="status" jdbcType="INTEGER" property="status" />
+    </resultMap>
+
+    <insert id="addOrder" parameterType="AppointOrder">
+      insert t_appoint_order(doctor_id,appoint_time_id,telephone,treat_type,sick_info,create_time,status)
+       values(#{doctorId},#{appointTimeId},#{telephone},#{treatType},#{sickInfo},#{createTime},0)
+    </insert>
+
+    <select id="getOrderByTelephone" resultMap="AppointOrderMap" parameterType="String">
+      select o.* from t_appoint_order o where o.telephone=${telephone}
+    </select>
+
+    <update id="updateOrder" parameterType="AppointOrder">
+        update t_appoint_order set treat_time=#{treatTime},treat_result=#{treatResult} where telephone=#{telephone}
+    </update>
+
+    <select id="checkOrderExist" resultMap="AppointOrderMap" parameterType="String">
+      select * from t_appoint_order where telephone=#{telephone} and status=0
+    </select>
+
+</mapper>

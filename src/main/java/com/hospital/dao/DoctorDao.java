@@ -18,4 +18,8 @@ public interface DoctorDao {
 
     Integer getAppointCount(Map<String, Integer> param);
 
+    void appointOrder(Map<String, Integer> param);
+
+    AppointTime getAppointTimeById(Map<String, Integer> param);
+
 }

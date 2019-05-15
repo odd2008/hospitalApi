@@ -58,28 +58,6 @@ public class LoginAspectHandler {
         String authorizationToken = request.getHeader(Constants.AUTHORIZATION);
         try{
             JwtTokenHelper.isExpiration(authorizationToken);
-            Map<String, String> userMap = AesEncryptHelper.getUserFromToken(authorizationToken);
-            logger.info(userMap.get("telephone"));
-            User user = userDao.getUserByTelephone(userMap.get("telephone"));
-            if (user != null){
-                if (userMap.get("password").equals(user.getPasswordHash())) {
-                    resultMap.put("status", "success");
-                    resultMap.put("errMsg", "");
-                    resultMap.put("data", "");
-                } else {
-                    resultMap.put("status", "error");
-                    resultMap.put("errMsg", "登录失败，密码不正确！");
-                    resultMap.put("data", "");
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, JSONObject.toJSONString(resultMap));
-                    return null;
-                }
-            } else {
-                resultMap.put("status", "error");
-                resultMap.put("errMsg", "登录失败，账号不存在！");
-                resultMap.put("data", "");
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, JSONObject.toJSONString(resultMap));
-                return null;
-            }
         } catch (Exception e){
             //token过期，抛出异常，重新登录
             resultMap.put("status", "error");
@@ -89,6 +67,28 @@ public class LoginAspectHandler {
             logger.info(e.getMessage());
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, JSONObject.toJSONString(resultMap));
             logger.info(authorizationToken);
+            return null;
+        }
+        Map<String, String> userMap = AesEncryptHelper.getUserFromToken(authorizationToken);
+        logger.info(userMap.get("telephone"));
+        User user = userDao.getUserByTelephone(userMap.get("telephone"));
+        if (user != null){
+            if (userMap.get("password").equals(user.getPasswordHash())) {
+                resultMap.put("status", "success");
+                resultMap.put("errMsg", "");
+                resultMap.put("data", "");
+            } else {
+                resultMap.put("status", "error");
+                resultMap.put("errMsg", "登录失败，密码不正确！");
+                resultMap.put("data", "");
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, JSONObject.toJSONString(resultMap));
+                return null;
+            }
+        } else {
+            resultMap.put("status", "error");
+            resultMap.put("errMsg", "登录失败，账号不存在！");
+            resultMap.put("data", "");
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, JSONObject.toJSONString(resultMap));
             return null;
         }
         return  pjp.proceed();

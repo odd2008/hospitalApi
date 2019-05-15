@@ -43,4 +43,11 @@
       select sum(a.total_num-a.appoint_num) from t_appoint_time a where a.doctor_id=${doctorId} and a.status=false
     </select>
 
+    <select id="getAppointTimeById" resultMap="AppointTimeMap" parameterType="Map">
+      select * from t_appoint_time where id=${id} and status=false
+    </select>
+
+    <update id="appointOrder" parameterType="Map">
+      update t_appoint_time t set t.appoint_num=t.appoint_num+1 where id=#{id}
+    </update>
 </mapper>

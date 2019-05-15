@@ -1,6 +1,7 @@
 package com.hospital.controller;
 
 import com.hospital.constant.Constants;
+import com.hospital.dao.AppointOrderDao;
 import com.hospital.dao.DepartDao;
 import com.hospital.dao.DoctorDao;
 import com.hospital.dao.UserDao;
@@ -11,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,6 +37,9 @@ public class AppointmentController {
 
     @Autowired
     private DoctorDao doctorDao;
+
+    @Autowired
+    private AppointOrderDao appointOrderDao;
 
     @PostMapping(value = "/getDepartInfo")
     public Map<String, Object> getDepartInfo(@RequestHeader HttpHeaders headers) throws Exception{
@@ -176,7 +181,6 @@ public class AppointmentController {
 
     @PostMapping(value = "/getAppointTime")
     public Map<String, Object> getAppointTime(Integer doctorId) {
-
         Map<String, Integer> param = new HashMap<>();
         param.put("doctorId", doctorId);
         List<AppointTime> appointTimes = doctorDao.getAppointTime(param);
@@ -185,6 +189,48 @@ public class AppointmentController {
         resultMap.put("status", "success");
         resultMap.put("errMsg", "");
         resultMap.put("data", appointTimes);
+        return resultMap;
+    }
+
+    @PostMapping(value = "/addAppointOrder")
+    @Transactional
+    public Map<String, Object> addAppointOrder(AppointOrder appointOrder, @RequestHeader HttpHeaders headers) throws Exception{
+        Map<String, Object> resultMap = new HashMap<>();
+        //获取用户电话号码
+        String authorizationToken = headers.getFirst(Constants.AUTHORIZATION);
+        Map<String, String> userMap = AesEncryptHelper.getUserFromToken(authorizationToken);
+        logger.info(userMap.get("telephone"));
+        String telephone = userMap.get("telephone");
+
+        // 预约资格判断
+        if(appointOrderDao.checkOrderExist(telephone).size() != 0) {
+            resultMap.put("status", "error");
+            resultMap.put("errMsg", "您已经预约，请勿重复预约");
+            resultMap.put("data", "");
+            return resultMap;
+        }
+
+        Map<String, Integer> param = new HashMap<>();
+        param.put("id", appointOrder.getAppointTimeId());
+        AppointTime appointTime = doctorDao.getAppointTimeById(param);
+        if(appointTime.getTotalNum() <= appointTime.getAppointNum()) {
+            resultMap.put("status", "error");
+            resultMap.put("errMsg", "预约名额已满");
+            resultMap.put("data", "");
+            return resultMap;
+        }
+
+        // 改变当前时间预约人数
+
+        doctorDao.appointOrder(param);
+
+        // 存订单数据库
+        appointOrder.setTelephone(telephone);
+        appointOrderDao.addOrder(appointOrder);
+
+        resultMap.put("status", "success");
+        resultMap.put("errMsg", "");
+        resultMap.put("data", "");
         return resultMap;
     }
 
