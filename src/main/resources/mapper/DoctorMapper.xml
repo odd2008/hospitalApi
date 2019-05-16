@@ -32,7 +32,7 @@
     </select>
 
     <select id="getRecommendDoctor" resultMap="DoctorMap">
-      select * from t_doctor order by (rate+appoint_num/500) DESC LIMIT 20
+      select * from t_doctor order by (rate+appoint_num/500) DESC LIMIT 100
     </select>
 
     <select id="getAppointTime" resultMap="AppointTimeMap" parameterType="Map">
