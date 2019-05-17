@@ -45,7 +45,7 @@ public class HospitalApplication {
 //    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
 //        return application.sources(HospitalApplication.class);
 //    }
-//    public static void main(String[] args) {
+//    public static-web void main(String[] args) {
 //        SpringApplication.run(HospitalApplication.class, args);
 //    }
 //

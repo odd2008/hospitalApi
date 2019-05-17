@@ -27,12 +27,20 @@
         update t_appoint_order set treat_time=#{treatTime},treat_result=#{treatResult} where telephone=#{telephone}
     </update>
 
+    <update id="treat" parameterType="Map">
+        update t_appoint_order set treat_time=#{treatTime},treat_result=#{treatResult},status=1 where id=#{id}
+    </update>
+
     <update id="cancleAppoint" parameterType="Map">
         update t_appoint_order set status=2 where id=${id}
     </update>
 
     <select id="checkOrderExist" resultMap="AppointOrderMap" parameterType="java.lang.String">
       select * from t_appoint_order where telephone=#{telephone} and status=0
+    </select>
+
+    <select id="getAppoint" resultMap="AppointOrderMap" parameterType="Map">
+      select * from t_appoint_order where doctor_id=#{doctorId} and status=0
     </select>
 
 </mapper>

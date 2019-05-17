@@ -30,10 +30,20 @@
       select u.* from t_user u where u.telephone=#{telephone}
     </select>
 
+    <select id="getAllUser" resultMap="UserMap">
+      select u.* from t_user u
+    </select>
+
     <update id="updateBasicInfo" parameterType="User">
         update t_user set name=#{name},gender=#{gender},birthday=#{birthday},height=#{height},weight=#{weight},job=#{job},
         emergency_name=#{emergencyName},emergency_link=#{emergencyLink},address=#{address},hometown=#{hometown} where telephone=#{telephone}
     </update>
+
+    <update id="updateBasicInfoById" parameterType="User">
+        update t_user set name=#{name},gender=#{gender},birthday=#{birthday},height=#{height},weight=#{weight},job=#{job},
+        emergency_name=#{emergencyName},emergency_link=#{emergencyLink},address=#{address},hometown=#{hometown} where id=#{id}
+    </update>
+
 
     <update id="addHeadImage" parameterType="Map">
         update t_user set head_image_url=#{headImageUrl} where telephone=#{telephone}

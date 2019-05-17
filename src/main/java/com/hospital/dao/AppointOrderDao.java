@@ -16,4 +16,9 @@ public interface AppointOrderDao {
     List<AppointOrder> checkOrderExist(String telephone);
 
     void cancleAppoint(Map<String, Integer> param);
+
+    List<AppointOrder> getAppoint(Map<String, Integer> param);
+    void treat(Map<String, Object> param);
+
+
 }

@@ -2,19 +2,23 @@ package com.hospital.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.hospital.constant.Constants;
-import com.hospital.dao.UserDao;
-import com.hospital.entity.User;
+import com.hospital.dao.*;
+import com.hospital.dto.DoctorDetailDTO;
+import com.hospital.dto.HealthDocDTO;
+import com.hospital.dto.UserDTO;
+import com.hospital.entity.*;
 import com.hospital.tools.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -31,6 +35,21 @@ public class NoTokenController {
 
     @Autowired
     private UserDao userDao;
+
+    @Autowired
+    private DoctorDao doctorDao;
+
+    @Autowired
+    private DepartDao departDao;
+
+    @Autowired
+    private HealthDocDao healthDocDao;
+
+    @Autowired
+    private ContentDao contentDao;
+
+    @Autowired
+    private AppointOrderDao appointOrderDao;
 
     private final static Logger logger = LoggerFactory.getLogger(NoTokenController.class);
 
@@ -146,5 +165,194 @@ public class NoTokenController {
             logger.info("邮件发送异常");
         }
 
+    }
+
+    @GetMapping(value="/getAllDoctor", produces= MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public String getAllDoctor(@RequestParam("callback") String callback) throws Exception {
+        Map<String, Object> resultMap = new HashMap<>();
+        List<DoctorDepart> doctors = doctorDao.getAllDoctor();
+
+        resultMap.put("status", "success");
+        resultMap.put("errMsg", "");
+        resultMap.put("data", doctors);
+        String result = JSONObject.toJSONString(resultMap);
+        return callback+"("+result +")";
+    }
+
+    @GetMapping(value="/getAllUser", produces= MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public String getAllUser(@RequestParam("callback") String callback) throws Exception {
+        Map<String, Object> resultMap = new HashMap<>();
+        List<User> users = userDao.getAllUser();
+        List<UserDTO> userDTOS = new ArrayList<>();
+        for (User u:users) {
+            userDTOS.add(new UserDTO(u, false));
+        }
+        resultMap.put("status", "success");
+        resultMap.put("errMsg", "");
+        resultMap.put("data", userDTOS);
+        String result = JSONObject.toJSONString(resultMap);
+        return callback+"("+result +")";
+    }
+
+    @GetMapping(value="/addAppointTime", produces= MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public String addAppointTime(AppointTime appointTime, @RequestParam("callback") String callback) throws Exception {
+
+        doctorDao.addAppointTime(appointTime);
+        Map<String, Object> resultMap = new HashMap<>();
+        resultMap.put("status", "success");
+        resultMap.put("errMsg", "");
+        resultMap.put("data", "");
+
+        String result = JSONObject.toJSONString(resultMap);
+        return callback+"("+result +")";
+    }
+
+    @GetMapping(value="/delAppointTime", produces= MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public String delAppointTime(Integer id, @RequestParam("callback") String callback) throws Exception {
+
+        Map<String, Integer> param = new HashMap<>();
+        param.put("id", id);
+        doctorDao.delAppointTime(param);
+        Map<String, Object> resultMap = new HashMap<>();
+        resultMap.put("status", "success");
+        resultMap.put("errMsg", "");
+        resultMap.put("data", "");
+
+        String result = JSONObject.toJSONString(resultMap);
+        return callback+"("+result +")";
+    }
+
+    @GetMapping(value="/getAppointTime", produces= MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public String getAppointTime(Integer doctorId, @RequestParam("callback") String callback) throws Exception {
+        Map<String, Integer> param = new HashMap<>();
+        param.put("doctorId", doctorId);
+        List<AppointTime> appointTimes = doctorDao.getAppointTime(param);
+
+        Map<String, Object> resultMap = new HashMap<>();
+        resultMap.put("status", "success");
+        resultMap.put("errMsg", "");
+        resultMap.put("data", appointTimes);
+
+        String result = JSONObject.toJSONString(resultMap);
+        return callback+"("+result +")";
+    }
+
+    @GetMapping(value="/getAllComment", produces= MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public String getAllComment(Integer targetType, Integer targetId, @RequestParam("callback") String callback) throws Exception {
+        Map<String, Integer> param = new HashMap<>();
+        param.put("targetType", targetType);
+        if(targetType == 2) {
+            // 获取科室的id
+            Map<String, Integer> doctorParam = new HashMap<>();
+            doctorParam.put("id", targetId);
+            Doctor doctor = doctorDao.getDoctorById(doctorParam);
+            targetId = doctor.getDepartId();
+        }
+
+        param.put("targetId", targetId);
+        List<Content> contents = contentDao.getComment(param);
+        List<Map<String, Object>> resultList = new ArrayList<>();
+        contents.stream().forEach(content -> {
+            Map<String, Object> result = new HashMap<>();
+            // 取信息
+            User user = userDao.getUserByTelephone(content.getTelephone());
+            UserDTO userDTO = new UserDTO(user, false);
+            result.put("user", userDTO);
+            result.put("comment", content);
+            resultList.add(result);
+        });
+
+        Map<String, Object> resultMap = new HashMap<>();
+        resultMap.put("status", "success");
+        resultMap.put("errMsg", "");
+        resultMap.put("data", resultList);
+        String result = JSONObject.toJSONString(resultMap);
+        return callback+"("+result +")";
+    }
+
+    @GetMapping(value="/getAppoint", produces= MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public String getAppoint(Integer doctorId, @RequestParam("callback") String callback) throws Exception {
+        Map<String, Object> resultMap = new HashMap<>();
+        Map<String, Integer> param = new HashMap<>();
+        param.put("doctorId", doctorId);
+        List<AppointOrder> orders = appointOrderDao.getAppoint(param);
+        List<Map<String, Object>> orderResults = new ArrayList<>();
+        for (AppointOrder o:orders) {
+            Map<String, Object> orderResult = new HashMap<>();
+            orderResult.put("order", o);
+            HealthDoc healthDoc = healthDocDao.getHealthDocByTelephone(o.getTelephone());
+            orderResult.put("health", healthDoc);
+            param.put("healthId", healthDoc.getId());
+            List<HealthDocImage> healthDocImages = healthDocDao.getHealthDocImageByHealthId(param);
+            orderResult.put("report",healthDocImages);
+            orderResult.put("user", new UserDTO(userDao.getUserByTelephone(o.getTelephone()), false));
+            Map<String, Integer> p = new HashMap<>();
+            p.put("id", o.getAppointTimeId());
+            AppointTime time = doctorDao.getAppointTimeById(p);
+            orderResult.put("appointTime", time.getAppointDate() + "-" +time.getTimeSpan());
+            orderResults.add(orderResult);
+        }
+        resultMap.put("status", "success");
+        resultMap.put("errMsg", "");
+        resultMap.put("data", orderResults);
+        String result = JSONObject.toJSONString(resultMap);
+        return callback+"("+result +")";
+    }
+
+    @GetMapping(value="/treat", produces= MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public String treat(String treatResult, Integer orderId,String treatTime,@RequestParam("callback") String callback) throws Exception {
+        Map<String, Object> resultMap = new HashMap<>();
+        Map<String, Object> param = new HashMap<>();
+        param.put("id", orderId);
+        param.put("treatResult", treatResult);
+        param.put("treatTime", treatTime);
+        appointOrderDao.treat(param);
+
+        resultMap.put("status", "success");
+        resultMap.put("errMsg", "");
+        resultMap.put("data","");
+        String result = JSONObject.toJSONString(resultMap);
+        return callback+"("+result +")";
+    }
+
+    @GetMapping(value = "/saveUserInfo", produces= MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public String saveUserInfo(User user,@RequestParam("callback") String callback) throws Exception{
+
+        // User user = new User(userMap.get("telephone"), userDTO.getName(), userDTO.getGender(), userDTO.getBirthday(), userDTO.getHeight(), userDTO.getWeight(), userDTO.getJob(), userDTO.getEmergencyName(), userDTO.getEmergencyLink(), userDTO.getAddress(), userDTO.getHometown());
+
+        userDao.updateBasicInfoById(user);
+        logger.info("保存基本信息");
+        Map<String, Object> resultMap = new HashMap<>();
+        resultMap.put("status", "success"); // success error
+        resultMap.put("errMsg", "");
+        resultMap.put("data", "");
+        String result = JSONObject.toJSONString(resultMap);
+        return callback+"("+result +")";
+    }
+
+    @GetMapping(value="/adminLogin", produces= MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public String adminLogin(Integer id, String account, String password, @RequestParam("callback") String callback) throws Exception{
+        logger.info(account);
+        Map<String, Object> resultMap = new HashMap<>();
+        Map<String, Integer> param = new HashMap<>();
+        param.put("id", id);
+        DoctorAdmin doctorAdminExist = doctorDao.getAdminDoctorById(param);
+        if (doctorAdminExist != null){
+            if (MD5EncodingHelper.EncodeByMD5(password).equals(doctorAdminExist.getPassword())){
+                resultMap.put("status", "success");
+                resultMap.put("errMsg", "");
+                resultMap.put("data", id);
+            } else {
+                resultMap.put("status", "error");
+                resultMap.put("errMsg", "登录失败，密码不正确！");
+                resultMap.put("data", "");
+            }
+        } else {
+            resultMap.put("status", "error");
+            resultMap.put("errMsg", "登录失败，账号不存在！");
+            resultMap.put("data", "");
+        }
+        String result = JSONObject.toJSONString(resultMap);
+        return callback+"("+result +")";
     }
 }

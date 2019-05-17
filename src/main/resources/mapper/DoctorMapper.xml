@@ -23,6 +23,19 @@
         <result column="status" jdbcType="BIT" property="status" />
     </resultMap>
 
+    <resultMap id="DoctorAdminMap" type="com.hospital.entity.DoctorAdmin">
+        <id column="id" jdbcType="INTEGER" property="id" />
+        <result column="name" jdbcType="VARCHAR" property="name" />
+        <result column="account" jdbcType="VARCHAR" property="account" />
+        <result column="password" jdbcType="VARCHAR" property="password" />
+    </resultMap>
+
+    <resultMap id="DoctorDepartMap" type="com.hospital.entity.DoctorDepart">
+        <id column="id" jdbcType="INTEGER" property="id" />
+        <result column="name" jdbcType="VARCHAR" property="name" />
+        <result column="department" jdbcType="VARCHAR" property="department" />
+    </resultMap>
+
     <select id="getDoctorByDepartId" resultMap="DoctorMap" parameterType="Map">
       select d.* from t_doctor d where d.depart_id=${departId}
     </select>
@@ -53,5 +66,22 @@
 
     <update id="cancleAppoint" parameterType="Map">
         update t_appoint_time set appoint_num=appoint_num-1 where id=${id}
+    </update>
+
+    <select id="getAllDoctor" resultMap="DoctorDepartMap">
+      select d.id,d.name,t.name department from t_doctor d JOIN t_depart t ON(t.id=d.depart_id)
+    </select>
+
+    <select id="getAdminDoctorById" resultMap="DoctorAdminMap" parameterType="DoctorAdmin">
+      select d.account,d.password from t_doctor d where d.id=${id}
+    </select>
+
+    <insert id="addAppointTime" parameterType="AppointTime">
+        insert into t_appoint_time(appoint_date, time_span, price, doctor_id, total_num, appoint_num, status)
+         values(#{appointDate}, #{timeSpan}, ${price}, ${doctorId}, ${totalNum}, 0, 0)
+    </insert>
+
+    <update id="delAppointTime" parameterType="Map">
+        update t_appoint_time set status=1 where id=${id}
     </update>
 </mapper>
